@@ -22,7 +22,7 @@ namespace TicTacToe
         X,
         O
     }
-    public class GameState
+    public class TicTacToe
     {
         public BoardState Board { get; set; }
         public Player ActivePlayer { get; set; }
