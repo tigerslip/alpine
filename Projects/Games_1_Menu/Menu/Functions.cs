@@ -10,6 +10,7 @@ namespace Games_1_Menu.Menu
             // run menu should start our game loop
             // up and down should move the selector position up and down
             // enter should select the game
+            // q should quit
 
             throw new NotImplementedException();
         }
