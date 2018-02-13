@@ -1,22 +1,21 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
 
 namespace TicTacToe
 {
-    public static class Functions
+    static class Functions
     {
-        public static void NewGame()
+        static void NewGame()
         {
-            var game = new TicTacToe
-            {
-                Board = new BoardState(),
-                ActivePlayer = GetStartingPlayer()
-            };
-
-            DrawGame(game);
-
             var gameOver = false;
+            var state = new GameState();
 
-            while (!gameOver)
+            Draw(state);
+
+            while (gameOver != true) // !gameOver
             {
                 var key = Console.ReadKey();
 
@@ -29,177 +28,230 @@ namespace TicTacToe
                         gameOver = true;
                         NewGame();
                         break;
-                    case 'w': // top left
-                        Functions.TrySetTopLeft(game);
+                    case 'w':
+                        TryMarkSpace(state, g => g.TopLeft);
                         break;
-                    case 'e': // top middle
-                        Functions.TrySetTopMiddle(game);
+                    case 'e':
+                        TryMarkSpace(state, g => g.TopMiddle);
                         break;
-                    case 'r': // top right
-                        Functions.TrySetTopRight(game);
+                    case 'r':
+                        TryMarkSpace(state, g => g.TopRight);
                         break;
-                    case 's': // left
-                        Functions.TrySetLeft(game);
+                    case 's':
+                        TryMarkSpace(state, g => g.Left);
                         break;
-                    case 'd': // middle
-                        Functions.TrySetMiddle(game);
+                    case 'd':
+                        TryMarkSpace(state, g => g.Middle);
                         break;
-                    case 'f': // right
-                        Functions.TrySetRight(game);
+                    case 'f':
+                        TryMarkSpace(state, g => g.Right);
                         break;
-                    case 'x': // bottom left
-                        Functions.TrySetBottomLeft(game);
+                    case 'x':
+                        TryMarkSpace(state, g => g.BottomLeft);
                         break;
-                    case 'c': // bottom middle
-                        Functions.TrySetBottomMiddle(game);
+                    case 'c':
+                        TryMarkSpace(state, g => g.BottomMiddle);
                         break;
-                    case 'v': // bottom right
-                        Functions.TrySetBottomRight(game);
-                        break;
-                    default:
+                    case 'v':
+                        TryMarkSpace(state, g => g.BottomRight);
                         break;
                 }
 
-                DrawGame(game);
-            }
-        }
+                PickWinner(state);
 
-        public static Player GetStartingPlayer()
-        {
-            var random = new Random();
-            var n = random.Next(0, 1);
-
-            if (n == 0)
-                return Player.X;
-            else if (n == 1)
-                return Player.O;
-            else
-                throw new Exception("Can only select player X or player O");
-
-        }
-
-        public static bool TrySetGameSpace(TicTacToe state, Func<BoardState, Square> selectGameSpace)
-        {
-            var space = selectGameSpace(state.Board);
-            if (space.State== Space.Empty)
-            {
-                space.State =
-                    state.ActivePlayer == Player.O
-                        ? Space.O
-                        : Space.X;
-
-                state.ActivePlayer = 
-                    state.ActivePlayer == Player.O
-                        ? Player.X
-                        : Player.O;
-
-                return true;
-            }
-
-            return false;
-        }
-
-        public static bool TrySetTopLeft(TicTacToe state) => TrySetGameSpace(state, b => b.TopLeft);
-        public static bool TrySetTopMiddle(TicTacToe state) => TrySetGameSpace(state, b => b.TopMiddle);
-        public static bool TrySetTopRight(TicTacToe state) => TrySetGameSpace(state, b => b.TopRight);
-        public static bool TrySetLeft(TicTacToe state) => TrySetGameSpace(state, b => b.Left);
-        public static bool TrySetMiddle(TicTacToe state) => TrySetGameSpace(state, b => b.Middle);
-        public static bool TrySetRight(TicTacToe state) => TrySetGameSpace(state, b => b.Right);
-        public static bool TrySetBottomLeft(TicTacToe state) => TrySetGameSpace(state, b => b.BottomLeft);
-        public static bool TrySetBottomMiddle(TicTacToe state) => TrySetGameSpace(state, b => b.BottomMiddle);
-        public static bool TrySetBottomRight(TicTacToe state) => TrySetGameSpace(state, b => b.BottomRight);
-
-        public static void DrawGame(TicTacToe state)
-        {
-            var b = state.Board;
-
-            var message = TryGetWinner(state, out Player winner)
-                ? $"Player {winner} you won!!!!"
-                : $"Player {state.ActivePlayer} it's your turn!";
-
-            var gameUpdate = $@"w
-Press q to quit
-Press n for new game
-
- {RenderSpace(b.TopLeft)} | {RenderSpace(b.TopMiddle)} | {RenderSpace(b.TopRight)}
- ---------
- {RenderSpace(b.Left)} | {RenderSpace(b.Middle)} | {RenderSpace(b.Right)}
- ---------
- {RenderSpace(b.BottomLeft)} | {RenderSpace(b.BottomMiddle)} | {RenderSpace(b.BottomRight)}
-
-{message}";
-
-            Console.Clear();
-            Console.Write(gameUpdate);
-        }
-
-        public static bool TryGetWinner(TicTacToe state, out Player winner)
-        {
-            bool ThreeInARow((Square, Square, Square) combo, out Player w)
-            {
-                var (a, b, c) = combo;
-
-                w = Player.X;
-
-                bool IsEmpty(Square s) => s.State == Space.Empty;
-
-                Player GetWinner(Square s) =>
-                    s.State == Space.O
-                        ? Player.O
-                        : Player.X;
-
-                if (IsEmpty(a) || IsEmpty(b) || IsEmpty(c))
-                    return false;
-
-                if (a.State == b.State && b.State == c.State)
+                if (state.Winner.HasValue)
                 {
-                    w = GetWinner(a);
+                    DrawWinScreen(state);
+                }
+                else
+                {
+                    Draw(state);
+                }
+            }
+        }
+
+        static void DrawWinScreen(GameState state)
+        {
+            Console.Clear();
+
+            var board = DrawGameBoard(state);
+
+            var update = "WINNER!!!! \r\n" + board;
+
+            Console.Write(update);
+            Console.ReadKey();
+        }
+
+        static void PickWinner(GameState state)
+        {
+            bool ThreeInARow(Space[] spaces, out Player winner)
+            {
+                winner = Player.O;
+
+                Space space1 = spaces[0];
+                Space space2 = spaces[1];
+                Space space3 = spaces[2];
+
+                if (space1.State == SpaceState.Empty)
+                {
+                    return false;
+                }
+
+                if (space1.State == space2.State && space2.State == space3.State)
+                {
+                    if (space1.State == SpaceState.O)
+                    {
+                        winner = Player.O;
+                    }
+                    else
+                    {
+                        winner = Player.X;
+                    }
+
                     return true;
                 }
 
                 return false;
             }
 
-            var combinations = new(Square, Square, Square)[]
+            var winningCombinations = new Space[][]
             {
-                (state.Board.TopLeft, state.Board.TopMiddle, state.Board.TopRight),
-                (state.Board.Left, state.Board.Middle, state.Board.Right),
-                (state.Board.BottomLeft, state.Board.BottomMiddle, state.Board.BottomRight),
-                (state.Board.TopLeft, state.Board.Left, state.Board.BottomLeft),
-                (state.Board.TopMiddle, state.Board.Middle, state.Board.BottomMiddle),
-                (state.Board.TopRight, state.Board.Right, state.Board.BottomRight),
-                (state.Board.TopLeft, state.Board.Middle, state.Board.BottomRight),
-                (state.Board.BottomLeft, state.Board.Middle, state.Board.TopRight)
+                new Space[] {state.TopLeft, state.TopMiddle, state.TopRight},
+                new Space[] {state.TopLeft, state.Middle, state.BottomRight},
+                new Space[] {state.TopLeft, state.Left, state.BottomLeft},
+                new Space[] {state.Left, state.Middle, state.Right},
+                new Space[] {state.BottomLeft, state.Middle, state.TopRight},
+                new Space[] {state.BottomLeft, state.BottomMiddle, state.BottomRight},
+                new Space[] {state.TopMiddle, state.Middle, state.BottomMiddle},
+                new Space[] {state.TopRight, state.Right, state.BottomRight}
             };
 
-            foreach (var combination in combinations)
+            for (int i = 0; i < winningCombinations.Length; i++)
             {
-                if (ThreeInARow(combination, out winner))
+                var combination = winningCombinations[i];
+
+                if (ThreeInARow(combination, out Player player))
                 {
-                    return true;
+                    state.Winner = player;
+                    return;
+                }
+            }
+        }
+
+        static void TryMarkSpace(GameState state, Func<GameState, Space> selectSpace)
+        {
+            var space = selectSpace(state);
+
+            if (space.State == SpaceState.Empty)
+            {
+                if (state.ActivePlayer == Player.X)
+                {
+                    space.State = SpaceState.X;
+                }
+
+                if (state.ActivePlayer == Player.O)
+                {
+                    space.State = SpaceState.O;
+                }
+
+                if (state.ActivePlayer == Player.X)
+                {
+                    state.ActivePlayer = Player.O;
+                }
+                else
+                {
+                    state.ActivePlayer = Player.X;
+                }
+            }
+        }
+
+        static void Draw(GameState state)
+        {
+            var board = DrawGameBoard(state);
+
+            var gameUpdate = $@"
+{board}
+
+Player {state.ActivePlayer} it's your turn!
+";
+
+            Console.Clear();
+            Console.Write(gameUpdate);
+        }
+
+        static string DrawGameBoard(GameState state)
+        {
+            string DrawSpace(Space space)
+            {
+                switch (space.State)
+                {
+                    case SpaceState.Empty:
+                        return " ";
+                    case SpaceState.X:
+                        return "X";
+                    case SpaceState.O:
+                        return "O";
+                    default:
+                        return " ";
                 }
             }
 
-            winner = Player.X;
+            return $@"
+    Press q to quit
+    Press n for a new game
 
-            return false;
+     {DrawSpace(state.TopLeft)} | {DrawSpace(state.TopMiddle)} | {DrawSpace(state.TopRight)}
+    -----------
+     {DrawSpace(state.Left)} | {DrawSpace(state.Middle)} | {DrawSpace(state.Right)}
+    -----------
+     {DrawSpace(state.BottomLeft)} | {DrawSpace(state.BottomMiddle)} | {DrawSpace(state.BottomRight)}
+    ";
         }
+    }
 
-        public static char RenderSpace(Square square)
+    public enum Player
+    {
+        X,
+        O
+    }
+
+    public enum SpaceState
+    {
+        Empty,
+        X,
+        O
+    }
+
+    public class Space
+    {
+        public SpaceState State { get; set; }
+    }
+
+    public class GameState
+    {
+        public GameState()
         {
-            var space = square.State;
-
-            switch (space)
-            {
-                case Space.Empty:
-                    return '\0';
-                case Space.O:
-                    return 'O';
-                case Space.X:
-                    return 'X';
-                default:
-                    throw new Exception("Expected Empty, X, or O");
-            }
+            TopLeft = new Space();
+            TopMiddle = new Space();
+            TopRight = new Space();
+            Left = new Space();
+            Middle = new Space();
+            Right = new Space();
+            BottomLeft = new Space();
+            BottomMiddle = new Space();
+            BottomRight = new Space();
         }
+
+        public Player ActivePlayer { get; set; }
+        public Player? Winner { get; set; }
+        public Space TopLeft { get; set; }
+        public Space TopMiddle { get; set; }
+        public Space TopRight { get; set; }
+        public Space Left { get; set; }
+        public Space Middle { get; set; }
+        public Space Right { get; set; }
+        public Space BottomLeft { get; set; }
+        public Space BottomMiddle { get; set; }
+        public Space BottomRight { get; set; }
     }
 }

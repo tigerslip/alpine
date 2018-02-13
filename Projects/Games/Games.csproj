@@ -52,7 +52,6 @@
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="TicTacToe\Functions.cs" />
-    <Compile Include="TicTacToe\Models.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
