@@ -28,5 +28,34 @@ namespace Games_1_Menu.Tests
         public void MoveDownTwice() {
             Assert.Fail();
         }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        [Test]
+        public void ForLoopExample()
+        {
+            var cookies = new string[] {"a", "b", "c", "d" };
+
+            for (int i = 0; i < cookies.Length; i++)
+            {
+                Console.WriteLine(cookies[i]);
+            }
+        }
+
     }
 }

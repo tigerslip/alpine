@@ -81,10 +81,4 @@ Press q to quit:
             Console.Write(scene);
         }
     }
-
-    public class Menu
-    {
-        public int SelectorPosition { get; set; }
-        public string[] Games => new[] { "Tic-Tac-Toe", "Connect-4" };
-    }
 }
