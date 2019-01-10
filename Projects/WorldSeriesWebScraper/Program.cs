@@ -9,9 +9,17 @@ using HtmlAgilityPack;
 
 namespace YahooWebScraper
 {
-    class Program
+    partial class Program
     {
         static void Main(string[] args)
+        {
+            var scores = GetWorldSeriesScores().ToArray();
+
+            Console.WriteLine("Press any key to exit");
+            Console.ReadKey();
+        }
+
+        private static IEnumerable<WorldSeriesData> GetWorldSeriesScores()
         {
             var client = new HttpClient();
 
@@ -30,7 +38,7 @@ namespace YahooWebScraper
             var rows = table
                 .SelectNodes("tbody/tr");
 
-            foreach(var row in rows.Skip(1))
+            foreach (var row in rows.Skip(1))
             {
                 string GetRowText(string xpath)
                 {
@@ -79,39 +87,7 @@ namespace YahooWebScraper
                     losingTeamManager
                 );
 
-                Console.WriteLine(
-                    $"In {data.Year} the {data.WinningTeam} (managed by {data.WinningTeamManager}) "
-                 +  $"won the world series. The losing team {data.LosingTeam} was managed by {data.LosingTeamManager}. "
-                 +  $"The score was {data.Games}.");
-            }
-
-            Console.WriteLine("Press any key to exit");
-            Console.ReadKey();
-        }
-
-        class WorldSeriesData
-        {
-            public int Year { get; }
-            public string WinningTeam { get; }
-            public string WinningTeamManager { get; }
-            public string Games { get; }
-            public string LosingTeam { get; }
-            public string LosingTeamManager { get; }
-
-            public WorldSeriesData(
-                int year,
-                string winningTeam,
-                string winningTeamManager,
-                string games,
-                string losingTeam,
-                string losingTeamManager)
-            {
-                Year = year;
-                WinningTeam = winningTeam;
-                WinningTeamManager = winningTeamManager;
-                Games = games;
-                LosingTeam = losingTeam;
-                LosingTeamManager = losingTeamManager;
+                yield return data;
             }
         }
     }
