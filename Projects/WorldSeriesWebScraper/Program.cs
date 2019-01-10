@@ -25,16 +25,21 @@ namespace YahooWebScraper
 
             var table = document
                 .DocumentNode
-                .SelectSingleNode("//trable[2]");
+                .SelectSingleNode("//table[2]");
 
             var rows = table
                 .SelectNodes("tbody/tr");
 
             foreach(var row in rows.Skip(1))
             {
-                var yearText = row
-                    .SelectSingleNode("th/a")
-                    .InnerText;
+                string GetRowText(string xpath)
+                {
+                    return row
+                        .SelectSingleNode(xpath)
+                        .InnerText;
+                }
+
+                var yearText = GetRowText("th/a");
 
                 var year = int.Parse(yearText);
 
@@ -51,17 +56,11 @@ namespace YahooWebScraper
                 var winningTeam = tds[1]
                     .InnerText;
 
-                var winningTeamManager = row
-                    .SelectSingleNode("td[2]/span/span/span/a")
-                    .InnerText;
+                var winningTeamManager = GetRowText("td[2]/span/span/span/a");
 
-                var score = row
-                    .SelectSingleNode("td[3]")
-                    .InnerText;
+                var score = GetRowText("td[3]");
 
-                var losingTeam = row
-                    .SelectSingleNode("td[4]/a")
-                    .InnerText;
+                var losingTeam = GetRowText("td[4]/a");
 
                 var losingTeamManagerNode =
                     row.SelectSingleNode("td[5]/span/span/span/a")
