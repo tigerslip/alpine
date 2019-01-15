@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Data.SQLite;
 using System.IO;
+using Dapper;
 
 namespace WorldSeriesWebScraper
 {
@@ -24,16 +25,41 @@ CREATE TABLE IF NOT EXISTS WorldSeriesScores (
     WinningTeamManager varchar(32),
     WinnerScore INT,
     LoserScore INT,
+    TiedGames INT,
     LosingTeam varchar(32),
     LosingTeamManager varchar(32)
 );
 ";
 
+            _connection.Execute(createScoreTable);
         }
 
-        public void Dispose()
+        public void InsertWorldSeriesScores(WorldSeriesData[] scores)
         {
-            _connection.Dispose();
+            var insertQuery = @"
+INSERT INTO WorldSeriesScores (
+    Year,
+    WinningTeam,
+    WinningTeamManager,
+    WinnerScore,
+    LoserScore,
+    TiedGames,
+    LosingTeam,
+    LosingTeamManager) VALUES (
+        @Year,
+        @WinningTeam,
+        @WinningTeaManager,
+        @WinnerScore,
+        @LoserScore,
+        @TiedGames,
+        @LosingTeam,
+        @LosingTeamManager
+    )
+)          
+";
+
+        _connection.Execute(insertQuery, scores);
+
         }
 
         internal static string ConnectionString(string path)
@@ -47,6 +73,11 @@ CREATE TABLE IF NOT EXISTS WorldSeriesScores (
             {
                 SQLiteConnection.CreateFile(path);
             }
+        }
+
+        public void Dispose()
+        {
+            _connection.Dispose();
         }
     }
 }

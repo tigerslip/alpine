@@ -7,7 +7,7 @@ using System.Resources;
 using System.Text;
 using HtmlAgilityPack;
 
-namespace YahooWebScraper
+namespace WorldSeriesWebScraper
 {
     partial class Program
     {
@@ -68,6 +68,16 @@ namespace YahooWebScraper
 
                 var score = GetRowText("td[3]");
 
+                var splitScore = score.Split('-');
+
+                var winningScore = int.Parse(splitScore[0]);
+
+                var losingScore = int.Parse(splitScore[1]);
+
+                var tiedGames = splitScore.Length == 3
+                    ? (int)char.GetNumericValue(splitScore[2][1])
+                    : 0;
+
                 var losingTeam = GetRowText("td[4]/a");
 
                 var losingTeamManagerNode =
@@ -82,7 +92,9 @@ namespace YahooWebScraper
                     year,
                     winningTeam,
                     winningTeamManager,
-                    score,
+                    winningScore,
+                    losingScore,
+                    tiedGames,
                     losingTeam,
                     losingTeamManager
                 );
