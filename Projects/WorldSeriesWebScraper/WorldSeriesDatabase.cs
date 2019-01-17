@@ -36,6 +36,8 @@ CREATE TABLE IF NOT EXISTS WorldSeriesScores (
 
         public void InsertWorldSeriesScores(WorldSeriesData[] scores)
         {
+            CreateWorldSeriesScoreTable();
+
             var insertQuery = @"
 INSERT INTO WorldSeriesScores (
     Year,
@@ -48,14 +50,13 @@ INSERT INTO WorldSeriesScores (
     LosingTeamManager) VALUES (
         @Year,
         @WinningTeam,
-        @WinningTeaManager,
-        @WinnerScore,
-        @LoserScore,
+        @WinningTeamManager,
+        @WinningScore,
+        @LosingScore,
         @TiedGames,
         @LosingTeam,
         @LosingTeamManager
-    )
-)          
+    );       
 ";
 
         _connection.Execute(insertQuery, scores);

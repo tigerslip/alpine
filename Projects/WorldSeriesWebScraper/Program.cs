@@ -14,9 +14,14 @@ namespace WorldSeriesWebScraper
         static void Main(string[] args)
         {
             var scores = GetWorldSeriesScores().ToArray();
-
-            Console.WriteLine("Press any key to exit");
-            Console.ReadKey();
+            var executingDir = AppDomain.CurrentDomain.BaseDirectory;
+            var fileName = "worldseriesdatabase.db3";
+            var fullPath = Path.Combine(executingDir, fileName);
+            
+            using (var db = new Database(fullPath))
+            {
+                db.InsertWorldSeriesScores(scores);
+            }
         }
 
         private static IEnumerable<WorldSeriesData> GetWorldSeriesScores()
@@ -61,18 +66,17 @@ namespace WorldSeriesWebScraper
                     continue;
                 }
 
-                var winningTeam = tds[1]
-                    .InnerText;
+                var winningTeam = GetRowText("td[1]/a");
 
                 var winningTeamManager = GetRowText("td[2]/span/span/span/a");
 
                 var score = GetRowText("td[3]");
-
-                var splitScore = score.Split('-');
+                
+                var splitScore = score.Split('–');
 
                 var winningScore = int.Parse(splitScore[0]);
 
-                var losingScore = int.Parse(splitScore[1]);
+                var losingScore = (int) char.GetNumericValue(splitScore[1][0]);
 
                 var tiedGames = splitScore.Length == 3
                     ? (int)char.GetNumericValue(splitScore[2][1])
