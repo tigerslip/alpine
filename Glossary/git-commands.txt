@@ -1,0 +1,6 @@
+git pull - runs git fetch and git merge. Basically it pulls the remote code into your local repo
+
+git status - check status of the current git repo
+
+git reset - reset current repository
+git reset --hard (!Dangerous!) - removes all changesw

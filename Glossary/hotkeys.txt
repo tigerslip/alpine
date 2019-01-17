@@ -1,0 +1,9 @@
+Text Editor
+Ctrl-Z -> Undo
+Ctrl-C -> Copy
+Ctrl-V -> Paste
+
+Visual Studio
+
+Ctrl-R-R -> Rename
+Ctrl-Shift-B -> Build Solution
