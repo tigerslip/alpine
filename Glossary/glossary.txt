@@ -1,0 +1,1 @@
+Extension - Windows file names have two parts; the file's name, then a period followed by the extension (suffix) e.g. .dll, .txt, .exe, .pdf
