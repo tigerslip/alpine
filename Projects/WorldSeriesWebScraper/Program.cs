@@ -106,5 +106,10 @@ namespace WorldSeriesWebScraper
                 yield return data;
             }
         }
+
+        private static IEnumerable<Player> GetWorldSeriesTeamPlayers(string team, int year)
+        {
+
+        } 
     }
 }
