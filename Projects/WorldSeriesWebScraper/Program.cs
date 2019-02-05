@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Net.Http;
@@ -14,7 +15,16 @@ namespace WorldSeriesWebScraper
     {
         static void Main(string[] args)
         {
-            GetWorldSeriesTeamPlayers("Boston Red Sox", 2018);
+            foreach (var wsc in GetWorldSeriesScores())
+            {
+                Console.WriteLine($"{wsc.Year} {wsc.WinningTeam}");
+                var players = GetWorldSeriesTeamPlayers(wsc.WinningTeam, wsc.Year);
+                foreach (var player in players)
+                {
+                    Console.WriteLine($"{player.Name} - {player.Age}");
+                }
+            }
+
             Console.ReadKey();
         }
 
@@ -118,7 +128,11 @@ namespace WorldSeriesWebScraper
         {
             //Boston Red Sox
             //Boston+Red+Sox
-            var formattedTeamName = teamName.Trim().Replace(' ', '+');
+            //St. Louis Cardinals -> St+Louis+Cardinals
+            var formattedTeamName = teamName
+                .Trim()
+                .Replace(".", "")
+                .Replace(' ', '+');
             
             //2018+Boston+Red+Sox
             var searchQuery = $"{year}+{formattedTeamName}";
@@ -129,8 +143,6 @@ namespace WorldSeriesWebScraper
         private static IEnumerable<Player> GetWorldSeriesTeamPlayers(string team, int year)
         {
             var client = new HttpClient();
-
-            var _ = client.GetAsync("https://www.baseball-reference.com").Result;
 
             var query = BaseballReferenceSearchUrl(year, team);
 
@@ -145,13 +157,56 @@ namespace WorldSeriesWebScraper
                 .DocumentNode
                 .SelectSingleNode("//comment()[contains(., 'Full-Season Roster &amp; Games by Position')]");
 
-                //[contains(., theClass)]
+            var cleanedTable = rosterTableComment
+                .InnerHtml
+                .Replace("<!--", "")
+                .Replace("-->", "")
+                .Trim();
 
-            var rosterTable = doc.DocumentNode.SelectSingleNode("//div[@id='div_appearances']");
+            var rosterTable = new HtmlDocument();
+            rosterTable.LoadHtml(cleanedTable);
 
-            Console.WriteLine(rosterTable);
+            var rows = rosterTable
+                .DocumentNode
+                .SelectNodes("div/div/table/tbody/tr");
 
-            return null;
+            foreach (var row in rows)
+            {
+                var name = row.SelectSingleNode("th/a").InnerText;
+
+                string RowText(string dataStat) => row
+                    .SelectSingleNode($"td[@data-stat='{dataStat}']")
+                    ?.InnerText;
+
+                var ageText = RowText("age");
+
+                var age = int.Parse(ageText);
+
+                var country = RowText("flag");
+
+                var dateOfBirthText = RowText("date_of_birth");
+                
+                var dateOfBirth = DateTime.ParseExact(
+                    s: dateOfBirthText, 
+                    formats: new [] {"MMM d, yyyy", "yyyy"},
+                    provider: null,
+                    style: DateTimeStyles.None);
+
+                var salaryText = RowText("Salary");
+
+                var style = NumberStyles.Number | NumberStyles.AllowCurrencySymbol;
+
+                var salary = string.IsNullOrWhiteSpace(salaryText)
+                    ? default(decimal?)
+                    : decimal.Parse(salaryText, style);
+
+                yield return new Player(
+                    name,
+                    age,
+                    country,
+                    dateOfBirth,
+                    salary);
+            }
         }
     }
 }
