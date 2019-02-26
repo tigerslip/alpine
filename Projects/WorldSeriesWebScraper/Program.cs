@@ -17,28 +17,27 @@ namespace WorldSeriesWebScraper
         {
             foreach (var wsc in GetWorldSeriesScores())
             {
-                Console.WriteLine($"{wsc.Year} {wsc.WinningTeam}");
-                var players = GetWorldSeriesTeamPlayers(wsc.WinningTeam, wsc.Year);
-                foreach (var player in players)
+                var players = GetWorldSeriesTeamPlayers(
+                        wsc.WinningTeam,
+                        wsc.Year).ToArray();
+
+                using (var connection = ConnectDatabase())
                 {
-                    Console.WriteLine($"{player.Name} - {player.Age}");
+                    connection.InsertPlayers(players);
                 }
+
+                Console.WriteLine($"Inserted players for {wsc.Year}");
             }
 
             Console.ReadKey();
         }
 
-        private static void InsertWorldSeriesTeams()
+        private static Database ConnectDatabase()
         {
-            var scores = GetWorldSeriesScores().ToArray();
             var executingDir = AppDomain.CurrentDomain.BaseDirectory;
             var fileName = "worldseriesdatabase.db3";
             var fullPath = Path.Combine(executingDir, fileName);
-
-            using (var db = new Database(fullPath))
-            {
-                db.InsertWorldSeriesScores(scores);
-            }
+            return new Database(fullPath);
         }
 
         private static IEnumerable<WorldSeriesData> GetWorldSeriesScores()

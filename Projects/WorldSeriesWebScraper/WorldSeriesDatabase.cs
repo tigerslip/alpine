@@ -63,6 +63,44 @@ INSERT INTO WorldSeriesScores (
 
         }
 
+        private void CreatePlayerTable()
+        {  
+            var createPlayerTable = @"
+CREATE TABLE IF NOT EXISTS Player (
+    Name varchar(32),
+    Age INT,
+    DateOfBirth varchar(10),
+    Country varchar(10),
+    Salary NUMERIC
+);
+";
+            _connection.Execute(createPlayerTable);
+        }
+
+        public void InsertPlayers(Player[] players)
+        {
+            CreatePlayerTable();
+
+            var insertPlayersQuery = @"
+INSERT INTO Player (
+    Name,
+    Age,
+    DateOfBirth,
+    Country,
+    Salary) 
+VALUES (
+    @Name,
+    @Age,
+    @DateOfBirth,
+    @Country,
+    @Salary);
+";
+
+            _connection.Execute(
+                sql: insertPlayersQuery,
+                param: players);
+        }
+
         internal static string ConnectionString(string path)
         {
             return $"Data Source={path};";
