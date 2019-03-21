@@ -4,16 +4,43 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Net.Http;
-using System.Resources;
-using System.Runtime.InteropServices;
-using System.Text;
 using HtmlAgilityPack;
+using CommandLine;
 
 namespace WorldSeriesWebScraper
 {
     partial class Program
     {
-        static void Main(string[] args)
+        static int Main(string[] args)
+        {
+            return Parser.Default.ParseArguments<LoadPlayersOptions, LoadWorldSeriesScoresOptions>(args)
+                .MapResult(
+                    (LoadPlayersOptions opts) => LoadPlayers(opts),
+                    (LoadWorldSeriesScoresOptions opts) => LoadWorldSeriesScores(opts),
+                    errs => PrintErrors(errs));
+        }
+
+        static int LoadPlayers(LoadPlayersOptions options)
+        {
+            throw new NotImplementedException("load players not implemented");
+        }
+
+        static int LoadWorldSeriesScores(LoadWorldSeriesScoresOptions options)
+        {
+            throw new NotImplementedException("load world series scores not implemented");
+        }
+
+        static int PrintErrors(IEnumerable<Error> errors)
+        {
+            foreach (var error in errors)
+            {
+                Console.WriteLine(error.ToString());
+            }
+
+            return 1;
+        }
+
+        /*static void Main(string[] args)
         {
             foreach (var wsc in GetWorldSeriesScores())
             {
@@ -30,7 +57,7 @@ namespace WorldSeriesWebScraper
             }
 
             Console.ReadKey();
-        }
+        }*/
 
         private static Database ConnectDatabase()
         {
