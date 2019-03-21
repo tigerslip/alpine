@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Data.SQLite;
 using System.Globalization;
 using System.IO;
 using System.Linq;
@@ -27,6 +28,30 @@ namespace WorldSeriesWebScraper
 
         static int LoadWorldSeriesScores(LoadWorldSeriesScoresOptions options)
         {
+            if (!File.Exists(options.Path))
+            {
+                var extension = Path.GetExtension(options.Path);
+                if (extension != ".db3")
+                {
+                    options.Path = Path.ChangeExtension(options.Path, "db3");
+                }
+                
+                Console.WriteLine($"Creating file: {options.Path}");
+                Database.CreateIfNotExists(options.Path);
+            }
+
+            using (var data = new Database(options.Path))
+            {
+                if (data.WorldSeriesScoresExist())
+                {
+                    if (options.Force != true)
+                    {
+                         Console.WriteLine("World series scores already loaded. Use --force to re-load.");
+                         return 1;
+                    }
+                }
+            }
+
             throw new NotImplementedException("load world series scores not implemented");
         }
 
