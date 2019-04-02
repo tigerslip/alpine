@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Data.SQLite;
 using System.IO;
+using System.Linq;
 using Dapper;
 
 namespace WorldSeriesWebScraper
@@ -112,6 +113,26 @@ VALUES (
             {
                 SQLiteConnection.CreateFile(path);
             }
+        }
+
+        private bool TableExists(string tableName)
+        {
+            return _connection.Query(
+                sql: "SELECT name FROM sqlite_master WHERE type= 'table' AND name=@tableName;",
+                param: new { tableName = tableName }
+             ).Any();
+        }
+
+        public bool WorldSeriesScoresExist()
+        {
+            if (!TableExists("WorldSeriesScores"))
+            {
+                return false;
+            }
+
+            return _connection.Query(
+                sql: "SELECT Year FROM WorldSeriesScores LIMIT 1"
+                ).Any();
         }
 
         public void Dispose()

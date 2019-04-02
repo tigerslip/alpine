@@ -13,6 +13,8 @@ namespace WorldSeriesWebScraper
     {
         static int Main(string[] args)
         {
+            args = new string[] { "load-world-series-scores", "./scores.db3" };
+
             return Parser.Default.ParseArguments<LoadPlayersOptions, LoadWorldSeriesScoresOptions>(args)
                 .MapResult(
                     (LoadPlayersOptions opts) => LoadPlayers(opts),
@@ -27,7 +29,62 @@ namespace WorldSeriesWebScraper
 
         static int LoadWorldSeriesScores(LoadWorldSeriesScoresOptions options)
         {
-            throw new NotImplementedException("load world series scores not implemented");
+           if (!File.Exists(options.Path))
+            {
+                var extension = Path.GetExtension(options.Path);
+                if(extension != ".db3")
+                {
+                    options.Path = Path.ChangeExtension(options.Path, "db3");
+                }
+
+                Console.WriteLine($"Creating file: {options.Path}");
+                Database.CreateIfNotExists(options.Path);
+            }
+
+            using(var data= new Database(options.Path))
+            {
+                if (data.WorldSeriesScoresExist())
+                {
+                    if(options.Force != true)
+                    {
+                        Console.WriteLine("World Series scores already loaded. Use --force to re-load.");
+                        return 1;
+                    }
+                    else
+                    {
+                        File.Delete(options.Path);
+                        Database.CreateIfNotExists(options.Path);
+                    }
+                }
+            }
+
+            Console.WriteLine("Beginning Get-World-Series-Scores");
+
+            var scores = new List<WorldSeriesData>();
+
+            var totalYears = DateTime.Now.Year - 1903;
+            double count = 0;
+            var nextPercentMessage = 20; 
+
+            foreach (var score in GetWorldSeriesScores())
+            {
+                count++;
+                scores.Add(score);
+
+                var percent = (int)Math.Round((double)count / totalYears) * 100;
+                if(percent > nextPercentMessage)
+                {
+                    Console.WriteLine("{nextPercentMessage} percent complete");
+                    nextPercentMessage += 20;
+                }
+            }
+            
+            using (var data = new Database(options.Path))
+            {
+                data.InsertWorldSeriesScores(scores.ToArray());
+            }
+            
+            return 1;
         }
 
         static int PrintErrors(IEnumerable<Error> errors)
@@ -40,32 +97,6 @@ namespace WorldSeriesWebScraper
             return 1;
         }
 
-        /*static void Main(string[] args)
-        {
-            foreach (var wsc in GetWorldSeriesScores())
-            {
-                var players = GetWorldSeriesTeamPlayers(
-                        wsc.WinningTeam,
-                        wsc.Year).ToArray();
-
-                using (var connection = ConnectDatabase())
-                {
-                    connection.InsertPlayers(players);
-                }
-
-                Console.WriteLine($"Inserted players for {wsc.Year}");
-            }
-
-            Console.ReadKey();
-        }*/
-
-        private static Database ConnectDatabase()
-        {
-            var executingDir = AppDomain.CurrentDomain.BaseDirectory;
-            var fileName = "worldseriesdatabase.db3";
-            var fullPath = Path.Combine(executingDir, fileName);
-            return new Database(fullPath);
-        }
 
         private static IEnumerable<WorldSeriesData> GetWorldSeriesScores()
         {
@@ -105,7 +136,6 @@ namespace WorldSeriesWebScraper
 
                 if (tds.Length < 3)
                 {
-                    Console.WriteLine($"{row.InnerText}");
                     continue;
                 }
 
