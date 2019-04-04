@@ -14,8 +14,6 @@ namespace WorldSeriesWebScraper
     {
         static int Main(string[] args)
         {
-            args = new string[] { "load-world-series-scores", "./scores.db3" };
-
             return Parser.Default.ParseArguments<LoadPlayersOptions, LoadWorldSeriesScoresOptions>(args)
                 .MapResult(
                     (LoadPlayersOptions opts) => LoadPlayers(opts),
@@ -42,7 +40,7 @@ namespace WorldSeriesWebScraper
                 Database.CreateIfNotExists(options.Path);
             }
 
-            using(var data= new Database(options.Path))
+            using(var data = new Database(options.Path))
             {
                 if (data.WorldSeriesScoresExist())
                 {
