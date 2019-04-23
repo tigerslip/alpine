@@ -118,9 +118,9 @@ VALUES (
         private bool TableExists(string tableName)
         {
             return _connection.Query(
-                sql: "SELECT name FROM sqlite_master WHERE type='table' AND name=@tableName;",
+                sql: "SELECT name FROM sqlite_master WHERE type= 'table' AND name=@tableName;",
                 param: new { tableName = tableName }
-            ).Any();
+             ).Any();
         }
 
         public bool WorldSeriesScoresExist()
@@ -132,7 +132,7 @@ VALUES (
 
             return _connection.Query(
                 sql: "SELECT Year FROM WorldSeriesScores LIMIT 1"
-            ).Any();
+                ).Any();
         }
 
         public void Dispose()
