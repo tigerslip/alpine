@@ -1,5 +1,6 @@
 How the internet works
 
+----------------------
 Wires, Cables and Wifi
 ----------------------
 
@@ -15,6 +16,7 @@ A bit is either a 0 or a 1?
 2. Light (Optical) - VERY FAST and Reliable - Expensive, hard to work with
 3. Radio - wireless - it's short distance
 
+----------
 IP and DNS
 ----------
 
@@ -27,3 +29,19 @@ Send a domain name and get back an IP address.
 
 DNS Spoofing
 Hacking into a DNS server to make it give you a bad IP address.
+
+--------------------------------
+Packets, Routing and Reliability
+--------------------------------
+
+Packets - the data (bits) that makes up music or photos is broken into small packets. Packets have a sending IP address and a receiving IP address.
+
+[PACKET]
+[[DATA]]
+[[S IP]]
+[[R IP]]
+
+Routers - take packets and send them to the next router until the packet reaches it's final destination.
+
+TCP
+Transmission Control Protocol - uses for the final destination to do an inventory of the packets. Missing packets are sent again.

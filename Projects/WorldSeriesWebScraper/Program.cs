@@ -60,28 +60,31 @@ namespace WorldSeriesWebScraper
             Console.WriteLine("Beginning Get-World-Series-Scores");
 
             var scores = new List<WorldSeriesData>();
-
+            
             var totalYears = DateTime.Now.Year - 1903;
             double count = 0;
-            var nextPercentMessage = 20; 
+            var nextPercentMessage = 20; // 20, 40, 60, 80, 100
 
             foreach (var score in GetWorldSeriesScores())
             {
                 count++;
                 scores.Add(score);
 
-                var percent = (int)Math.Round((double)count / totalYears) * 100;
-                if(percent > nextPercentMessage)
+                var percent = (int)Math.Round(count / totalYears) * 100;
+                if (percent >= nextPercentMessage)
                 {
-                    Console.WriteLine("{nextPercentMessage} percent complete");
+                    Console.WriteLine($"{nextPercentMessage} percent complete");
                     nextPercentMessage += 20;
                 }
             }
-            
+
             using (var data = new Database(options.Path))
             {
                 data.InsertWorldSeriesScores(scores.ToArray());
             }
+
+            Console.WriteLine($"Completed loading World series data at {options.Path}");
+
             
             return 1;
         }
@@ -96,6 +99,13 @@ namespace WorldSeriesWebScraper
             return 1;
         }
 
+        private static Database ConnectDatabase()
+        {
+            var executingDir = AppDomain.CurrentDomain.BaseDirectory;
+            var fileName = "worldseriesdatabase.db3";
+            var fullPath = Path.Combine(executingDir, fileName);
+            return new Database(fullPath);
+        }
 
         private static IEnumerable<WorldSeriesData> GetWorldSeriesScores()
         {
