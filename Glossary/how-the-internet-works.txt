@@ -1,0 +1,29 @@
+How the internet works
+
+Wires, Cables and Wifi
+----------------------
+
+bits -> kb, mb, gb
+
+A bit is the smallest unit of data on a computer.
+
+A bit is either a 0 or a 1? 
+
+3 ways to transmit this data? 
+
+1. Electricity (Ethernet) - cheap - short distance
+2. Light (Optical) - VERY FAST and Reliable - Expensive, hard to work with
+3. Radio - wireless - it's short distance
+
+IP and DNS
+----------
+
+IP - Internet Protocol
+IP Address - Unique numerical address for a device
+
+DNS
+Domain Name System
+Send a domain name and get back an IP address.
+
+DNS Spoofing
+Hacking into a DNS server to make it give you a bad IP address.
