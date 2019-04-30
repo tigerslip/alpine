@@ -23,24 +23,54 @@ namespace WorldSeriesWebScraper
 
         static int LoadPlayers(LoadPlayersOptions options)
         {
-            throw new NotImplementedException("load players not implemented");
+            var path = MakeSureDatabaseFileExists(options.Path);
+
+            bool WorldSeriesScoresExist()
+            {
+                using (var connection = new Database(path))
+                {
+                    return connection.WorldSeriesScoresExist();
+                }
+            }
+
+            if (!WorldSeriesScoresExist())
+            {
+                Console.WriteLine("World series scores not yet loaded. Loading now...");
+
+                var loadWorldSeriesScoresOptions = new LoadWorldSeriesScoresOptions()
+                {
+                    Path = path
+                };
+
+                LoadWorldSeriesScores(loadWorldSeriesScoresOptions);
+            }
+
+            // ok need to load players now
+            throw new NotImplementedException("Not done yet!");
+        }
+        
+        static string MakeSureDatabaseFileExists(string path)
+        {
+            if (!File.Exists(path))
+            {
+                var extension = Path.GetExtension(path);
+                if (extension != ".db3")
+                {
+                    path = Path.ChangeExtension(path, "db3");
+                }
+
+                Console.WriteLine($"Creating file: {path}");
+                Database.CreateIfNotExists(path);
+            }
+
+            return path;
         }
 
         static int LoadWorldSeriesScores(LoadWorldSeriesScoresOptions options)
         {
-           if (!File.Exists(options.Path))
-            {
-                var extension = Path.GetExtension(options.Path);
-                if(extension != ".db3")
-                {
-                    options.Path = Path.ChangeExtension(options.Path, "db3");
-                }
+            var path = MakeSureDatabaseFileExists(options.Path);
 
-                Console.WriteLine($"Creating file: {options.Path}");
-                Database.CreateIfNotExists(options.Path);
-            }
-
-            using(var data = new Database(options.Path))
+            using(var data = new Database(path))
             {
                 if (data.WorldSeriesScoresExist())
                 {
@@ -51,8 +81,8 @@ namespace WorldSeriesWebScraper
                     }
                     else
                     {
-                        File.Delete(options.Path);
-                        Database.CreateIfNotExists(options.Path);
+                        File.Delete(path);
+                        Database.CreateIfNotExists(path);
                     }
                 }
             }
@@ -78,12 +108,12 @@ namespace WorldSeriesWebScraper
                 }
             }
 
-            using (var data = new Database(options.Path))
+            using (var data = new Database(path))
             {
                 data.InsertWorldSeriesScores(scores.ToArray());
             }
 
-            Console.WriteLine($"Completed loading World series data at {options.Path}");
+            Console.WriteLine($"Completed loading World series data at {path}");
 
             
             return 1;
