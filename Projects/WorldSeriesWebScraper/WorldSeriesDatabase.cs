@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Data.SQLite;
 using System.IO;
 using System.Linq;
@@ -64,42 +65,55 @@ INSERT INTO WorldSeriesScores (
 
         }
 
-        private void CreatePlayerTable()
+        public void CreatePlayerTable()
         {  
             var createPlayerTable = @"
-CREATE TABLE IF NOT EXISTS Player (
+CREATE TABLE IF NOT EXISTS Players (
     Name varchar(32),
     Age INT,
     DateOfBirth varchar(10),
     Country varchar(10),
-    Salary NUMERIC
+    Salary NUMERIC,
+    Team varchar(32)
 );
 ";
             _connection.Execute(createPlayerTable);
         }
 
-        public void InsertPlayers(Player[] players)
+        public void InsertPlayers(Player[] players, string team)
         {
-            CreatePlayerTable();
-
             var insertPlayersQuery = @"
-INSERT INTO Player (
+INSERT INTO Players (
     Name,
     Age,
     DateOfBirth,
     Country,
-    Salary) 
+    Salary,
+    Team) 
 VALUES (
     @Name,
     @Age,
     @DateOfBirth,
     @Country,
-    @Salary);
+    @Salary,
+    @Team);
 ";
+
+            var data = players
+                .Select(player => new
+                {
+                    Name = player.Name,
+                    Age = player.Age,
+                    DateOfBirth = player.DateOfBirth,
+                    Country = player.Country,
+                    Salary = player.Salary,
+                    Team = team
+                })
+                .ToList();
 
             _connection.Execute(
                 sql: insertPlayersQuery,
-                param: players);
+                param: data);
         }
 
         internal static string ConnectionString(string path)
@@ -133,6 +147,40 @@ VALUES (
             return _connection.Query(
                 sql: "SELECT Year FROM WorldSeriesScores LIMIT 1"
                 ).Any();
+        }
+
+        public IReadOnlyList<WorldSeriesData> GetWorldSeriesData()
+        {
+            const string query = @"
+SELECT
+    Year, 
+    WinningTeam,
+    WinningTeamManager,
+    WinnerScore WinningScore,
+    LoserScore LosingScore,
+    TiedGames,
+    LosingTeam,
+    LosingTeamManager
+FROM WorldSeriesScores
+";
+
+            return _connection
+                .Query<WorldSeriesData>(query)
+                .ToList();
+        }
+
+        public bool TeamPlayersAreLoaded(string team)
+        {
+            const string query = "SELECT Name FROM Players WHERE Team = @team";
+
+            var playerNames = _connection.Query(query, new {team = team});
+
+            if (playerNames.Any())
+            {
+                return true;
+            }
+
+            return false;
         }
 
         public void Dispose()

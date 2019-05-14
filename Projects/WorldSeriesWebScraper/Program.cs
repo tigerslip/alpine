@@ -45,20 +45,41 @@ namespace WorldSeriesWebScraper
                 LoadWorldSeriesScores(loadWorldSeriesScoresOptions);
             }
 
-            // ok need to load players now
-            throw new NotImplementedException("Not done yet!");
+            using (var connection = new Database(path))
+            {
+                var scores = connection.GetWorldSeriesData();
+                connection.CreatePlayerTable();
+
+                foreach (var score in scores)
+                {
+                    if (!connection.TeamPlayersAreLoaded(score.WinningTeam))
+                    {
+                        Console.WriteLine($"Loading players for team {score.WinningTeam}");
+
+                        var players = GetWorldSeriesTeamPlayers(score.WinningTeam, score.Year).ToArray();
+
+                        connection.InsertPlayers(players, score.WinningTeam);
+                    }
+                    else
+                    {
+                        Console.WriteLine($"Skipping {score.WinningTeam} because it's already loaded.");
+                    }
+                }
+            }
+
+            return 1;
         }
         
         static string MakeSureDatabaseFileExists(string path)
         {
+            var extension = Path.GetExtension(path);
+            if (extension != ".db3")
+            {
+                path = Path.ChangeExtension(path, "db3");
+            }
+
             if (!File.Exists(path))
             {
-                var extension = Path.GetExtension(path);
-                if (extension != ".db3")
-                {
-                    path = Path.ChangeExtension(path, "db3");
-                }
-
                 Console.WriteLine($"Creating file: {path}");
                 Database.CreateIfNotExists(path);
             }
